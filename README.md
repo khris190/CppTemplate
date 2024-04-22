@@ -8,3 +8,8 @@ cd {newName}
 
 # Remove the remote origin
 git remote remove origin
+
+#unified command
+```bash
+TMP_NEW_DIR_NAME="MyProject" && git clone https://github.com/khris190/CppTemplate.git "$TMP_NEW_DIR_NAME" && cd "$TMP_NEW_DIR_NAME" && git remote remove origin
+```
