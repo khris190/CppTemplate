@@ -16,8 +16,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_definitions(VERSION="${VERSION}")
 add_compile_definitions(PROJECT_NAME="${PROJECT_NAME}")
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-
 set(CMAKE_CXX_FLAGS_DEBUG "-g -D DEBUG")
 
 # include files
@@ -27,10 +25,30 @@ file(GLOB_RECURSE HEADERS ${INCLUDE_DIR}/*.h ${INCLUDE_DIR}/*.hpp)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include(CPack)
+
+# values to set
 find_package(Boost COMPONENTS)
 
-include(FetchContent)
+set(LIBS ${LIBS} ${Boost_LIBRARIES} -lpthread)
+set(PUBLIC_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${INCLUDE_DIR})
+set(PRIVATE_INCLUDE_DIRS ${DOCTEST_INCLUDE_DIR} ${INCLUDE_DIR})
+# end
 
+add_executable(${PROJECT_NAME} main.cpp ${SOURCES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${PUBLIC_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${PRIVATE_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} ${LIBS})
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+set(EXECUTABLE_OUTPUT_PATH ${BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BINARY_DIR})
+
+enable_testing()
+
+include(FetchContent)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip)
@@ -39,31 +57,16 @@ set(gtest_force_shared_crt
     CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-set(LIBS ${LIBS} ${Boost_LIBRARIES} -lpthread)
-add_executable(${PROJECT_NAME} main.cpp ${SOURCES})
-
-target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} PRIVATE ${DOCTEST_INCLUDE_DIR}
-                                                   ${INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${LIBS})
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
-set(EXECUTABLE_OUTPUT_PATH ../${BINARY_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../${BINARY_DIR})
-
-enable_testing()
-
 set(TESTS_DIR "tests")
 file(GLOB TEST_SOURCES ${TESTS_DIR}/*.cpp ${TESTS_DIR}/**/*.cpp
      ${TESTS_DIR}/*.c ${TESTS_DIR}/**/*.c)
 foreach(TEST_SOURCE ${TEST_SOURCES})
   # string(REGEX REPLACE "^.*/" "" TEST_NAME ${TEST_SOURCE} )
   string(REGEX REPLACE ".+/(.+)\\..+" "\\1" TEST_NAME ${TEST_SOURCE})
+
   add_executable(${TEST_NAME} ${TEST_SOURCE} ${SOURCES})
-  target_include_directories(${TEST_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
-  target_include_directories(${TEST_NAME} PRIVATE ${INCLUDE_DIR})
+  target_include_directories(${TEST_NAME} PUBLIC ${PUBLIC_INCLUDE_DIRS})
+  target_include_directories(${TEST_NAME} PRIVATE ${PRIVATE_INCLUDE_DIRS})
 
   target_link_libraries(${TEST_NAME} GTest::gtest_main ${LIBS})
   include(GoogleTest)
