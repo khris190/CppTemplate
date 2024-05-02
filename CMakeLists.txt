@@ -18,21 +18,21 @@ add_compile_definitions(PROJECT_NAME="${PROJECT_NAME}")
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -D DEBUG")
 
-# include files
-file(GLOB_RECURSE SOURCES ${INCLUDE_DIR}/*.c ${INCLUDE_DIR}/*.cpp)
-file(GLOB_RECURSE HEADERS ${INCLUDE_DIR}/*.h ${INCLUDE_DIR}/*.hpp)
-
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include(CPack)
 
-# values to set
+# values to set <-------------------------------------------------------HERE
 find_package(Boost COMPONENTS)
 
 set(LIBS ${LIBS} ${Boost_LIBRARIES} -lpthread)
 set(PUBLIC_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${INCLUDE_DIR})
 set(PRIVATE_INCLUDE_DIRS ${DOCTEST_INCLUDE_DIR} ${INCLUDE_DIR})
 # end
+
+# include files
+file(GLOB_RECURSE SOURCES ${INCLUDE_DIR}/*.c ${INCLUDE_DIR}/*.cpp)
+file(GLOB_RECURSE HEADERS ${INCLUDE_DIR}/*.h ${INCLUDE_DIR}/*.hpp)
 
 add_executable(${PROJECT_NAME} main.cpp ${SOURCES})
 
